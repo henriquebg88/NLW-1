@@ -6,7 +6,10 @@ const connection = knex(
         connection:
         {
             filename: './database.sqlite'
-        }
+        },
+        
+        useNullAsDefault: true
+
     }
 );
 
