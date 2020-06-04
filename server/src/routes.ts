@@ -1,19 +1,21 @@
 import express from 'express';
+import knexDB from './database/connection';
 
 const router = express.Router();
 
 /////////////////////////////////////////////////////////////
 
-router.get("/", (req, resp) => {
+router.get("/itens", async (req, resp) => {
 
-    return resp.json(
-        [
-            'Mlk doido',
-            'Linga de trapo',
-            'Sapo colorado',
-            'Morte ao Paulo, lenta e dolorosa'
-        ]
-    )
+    const itens = await knexDB('itens').select('*');
+    const serializedItens = itens.map( item => {
+        return {
+            title: item.title,
+            image_url: `http://localhost:3333/itens/${item.image}`
+        }
+    })
+
+    return resp.json(serializedItens);
 })
 
 /////////////////////////////////////////////////////////////
