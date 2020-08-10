@@ -41,12 +41,21 @@ class PointsController {
 
     async index(req: Request, res: Response) {
 
-        let filter = req.query;
+        let {city, uf, items} = req.query;
 
-        let listedPoints = await knexConnection('Points').select('*')
-            .where();
+        let parsedItems = String(items)
+            .split(',')
+            .map( item => Number(item.trim()));
 
-        return res.json(listedPoints);
+        let points = await knexConnection('Points')
+                                .join('Point_Items', 'Points.id', '=', 'Point_Items.point_id')
+                                .whereIn('Point_Items.item_id', parsedItems)
+                                .where('city', String(city))
+                                .where('uf', String(uf))
+                                .distinct()
+                                .select('Points.*')
+
+        return res.json(points)
     }
 
     async show(req: Request, res: Response) {
