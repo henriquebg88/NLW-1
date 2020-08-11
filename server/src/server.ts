@@ -1,9 +1,11 @@
 import express from 'express';
+import cors from 'cors';
 import path from 'path';
 import routes from './routes';
 
 const app = express();
 
+app.use(cors()); //Define quais endereços externos terão acesso à aplicação (para acessar a API)
 app.use(express.json()); //Permite o retorno de JSON pela resposta de acesso as rotas
 app.use(routes);
 
