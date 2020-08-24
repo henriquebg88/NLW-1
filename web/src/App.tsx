@@ -1,9 +1,11 @@
 import React from 'react';
 import './App.css';
 
+import Home from './Pages/Home/index';
+
 function App() {
   return (
-    <h1>Yo</h1>
+    <Home/>
   );
 }
 
