@@ -1,6 +1,7 @@
 import React from 'react';
 import { FiArrowLeft } from 'react-icons/fi'
 import { Link } from 'react-router-dom';
+import {Map, Marker,TileLayer} from 'react-leaflet';
 
 import './styles.css';
 
@@ -70,11 +71,33 @@ const CreatePoint = () => {
 
                     <ul className='items-grid'>
                         <li>
-                            <img src="" alt=""/>
+                            <img src="http://localhost:3333/uploads/oleo.svg" alt=""/>
+                            <span>Óleo de cozinha</span>
+                        </li>
+                        <li>
+                            <img src="http://localhost:3333/uploads/oleo.svg" alt=""/>
+                            <span>Óleo de cozinha</span>
+                        </li>
+                        <li>
+                            <img src="http://localhost:3333/uploads/oleo.svg" alt=""/>
+                            <span>Óleo de cozinha</span>
+                        </li>
+                        <li>
+                            <img src="http://localhost:3333/uploads/oleo.svg" alt=""/>
+                            <span>Óleo de cozinha</span>
+                        </li>
+                        <li>
+                            <img src="http://localhost:3333/uploads/oleo.svg" alt=""/>
+                            <span>Óleo de cozinha</span>
+                        </li>
+                        <li>
+                            <img src="http://localhost:3333/uploads/oleo.svg" alt=""/>
+                            <span>Óleo de cozinha</span>
                         </li>
                     </ul>
                 </fieldset>
                 
+                <button>Cadastrar ponto de coleta</button>
             </form>
         </div>
     )
