@@ -1,13 +1,28 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { FiArrowLeft } from 'react-icons/fi'
 import { Link } from 'react-router-dom';
-import {Map, Marker,TileLayer} from 'react-leaflet';
+import { Map, Marker, TileLayer } from 'react-leaflet';
+import api from "../../services/api";
 
 import './styles.css';
 
 import logo from '../../assets/logo.svg'
 
+interface Item {
+    title: string;
+    URL: string;
+}
+
 const CreatePoint = () => {
+
+    const [items, setItems] = useState<Item[]>([])
+
+    useEffect(() => {
+        api.get('/items').then(response => {
+            setItems(response.data);
+        })
+    }, [])
+
     return (
         <div id="page-create-point">
             <header>
@@ -25,21 +40,21 @@ const CreatePoint = () => {
 
                     <div className="field">
                         <label htmlFor="name">Nome da entidade</label>
-                        <input type="text" name='name' id='name'/>
+                        <input type="text" name='name' id='name' />
                     </div>
 
                     <div className="field-group">
                         <div className="field">
                             <label htmlFor="email">E-mail</label>
-                            <input type="text" name='email' id='email'/>
+                            <input type="text" name='email' id='email' />
                         </div>
                         <div className="field">
                             <label htmlFor="whatsapp">Whatsapp</label>
-                            <input type="text" name='whatsapp' id='whatsapp'/>
+                            <input type="text" name='whatsapp' id='whatsapp' />
                         </div>
                     </div>
-
                 </fieldset>
+
 
                 <fieldset>
                     <legend>
@@ -47,6 +62,13 @@ const CreatePoint = () => {
                         <span>Selecione o endereço no mapa</span>
                     </legend>
 
+                    <Map center={[-15.737613, -47.8653219]} zoom={15}>
+                        <TileLayer
+                            attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        />
+                        <Marker position={[-15.737613, -47.8653219]} />
+                    </Map>
                     <div className="field-group">
                         <div className="field">
                             <label htmlFor="uf">Estado (UF)</label>
@@ -70,33 +92,18 @@ const CreatePoint = () => {
                     </legend>
 
                     <ul className='items-grid'>
-                        <li>
-                            <img src="http://localhost:3333/uploads/oleo.svg" alt=""/>
-                            <span>Óleo de cozinha</span>
-                        </li>
-                        <li>
-                            <img src="http://localhost:3333/uploads/oleo.svg" alt=""/>
-                            <span>Óleo de cozinha</span>
-                        </li>
-                        <li>
-                            <img src="http://localhost:3333/uploads/oleo.svg" alt=""/>
-                            <span>Óleo de cozinha</span>
-                        </li>
-                        <li>
-                            <img src="http://localhost:3333/uploads/oleo.svg" alt=""/>
-                            <span>Óleo de cozinha</span>
-                        </li>
-                        <li>
-                            <img src="http://localhost:3333/uploads/oleo.svg" alt=""/>
-                            <span>Óleo de cozinha</span>
-                        </li>
-                        <li>
-                            <img src="http://localhost:3333/uploads/oleo.svg" alt=""/>
-                            <span>Óleo de cozinha</span>
-                        </li>
+                        {items.map(item => {
+                            return (
+                                <li>
+                                    <img src={item.URL} alt="" />
+                                    <span>{item.title}</span>
+                                </li>
+                            )
+                        })}
+
                     </ul>
                 </fieldset>
-                
+
                 <button>Cadastrar ponto de coleta</button>
             </form>
         </div>
