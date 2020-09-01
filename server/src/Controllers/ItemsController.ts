@@ -10,8 +10,9 @@ class ItemsController {
 
         let serializedItems = listedItems.map(item => {
             return {
+                id: item.id,
                 title: item.title,
-                URL: `http://localhost:3333/uploads/${item.image}.svg`
+                URL: `http://localhost:3333/uploads/${item.image}`
             };
         })
 
