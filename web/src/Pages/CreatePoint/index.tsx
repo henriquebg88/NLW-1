@@ -1,6 +1,6 @@
-import React, { useEffect, useState, ChangeEvent } from 'react';
+import React, { useEffect, useState, ChangeEvent, FormEvent } from 'react';
 import { FiArrowLeft } from 'react-icons/fi'
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import { Map, Marker, TileLayer } from 'react-leaflet';
 import { LeafletMouseEvent } from 'leaflet';
 import api from "../../services/api";
@@ -18,9 +18,11 @@ interface Item {
 interface IBGE_UF_response {
     sigla: string;
 }
-interface IBG_City_response{
+interface IBG_City_response {
     nome: string;
 }
+
+
 
 const CreatePoint = () => {
 
@@ -30,16 +32,24 @@ const CreatePoint = () => {
 
     const [selectedUf, set_selectedUf] = useState('0');
     const [selectedCity, set_selectedCity] = useState('0');
-    const [InicialPosition, set_InicialPosition] = useState<[number, number]>([0,0]);
-    const [selectedPosition, set_selectedPosition] = useState<[number, number]>([0,0]);
+    const [InicialPosition, set_InicialPosition] = useState<[number, number]>([0, 0]);
+    const [selectedPosition, set_selectedPosition] = useState<[number, number]>([0, 0]);
+    const [formData, set_formData] = useState({
+        name: '',
+        email: '',
+        whatsapp: ''
+    });
+    const [selectedItems, set_selectedItems] = useState<number[]>([]);
 
-    useEffect(()=>{
+    const history = useHistory();
+
+    useEffect(() => {
         navigator.geolocation.getCurrentPosition(position => {
             console.log(position)
-            let {latitude, longitude} = position.coords;
-            set_InicialPosition([latitude,longitude]);
+            let { latitude, longitude } = position.coords;
+            set_InicialPosition([latitude, longitude]);
         })
-    },[])
+    }, [])
     useEffect(() => {
         api.get('/items').then(response => {
             setItems(response.data);
@@ -52,29 +62,66 @@ const CreatePoint = () => {
         })
     }, [])
     useEffect(() => {
-        if (selectedUf === '0'){
+        if (selectedUf === '0') {
             return;
         }
         axios.get<IBG_City_response[]>(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedUf}/municipios`)
-        .then(response => {
-            const cityNames = response.data.map(city => city.nome);
-            setCities(cityNames);
-        })
+            .then(response => {
+                const cityNames = response.data.map(city => city.nome);
+                setCities(cityNames);
+            })
 
-    },[selectedUf]);
+    }, [selectedUf]);
 
-    function handleSelectedUf (event: ChangeEvent<HTMLSelectElement>){
+    function handleSelectedUf(event: ChangeEvent<HTMLSelectElement>) {
         set_selectedUf(event.target.value);
     }
-    function handleSelectedCity (event: ChangeEvent<HTMLSelectElement>) {
+    function handleSelectedCity(event: ChangeEvent<HTMLSelectElement>) {
         set_selectedCity(event.target.value)
     }
     function handleMapMouseClick(event: LeafletMouseEvent) {
         set_selectedPosition([event.latlng.lat, event.latlng.lng]);
     }
-    function handleInputChange(event: ChangeEvent<HTMLInputElement>){
-        console.log(event)
+    function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
+        const { name, value } = event.target
+
+        set_formData({ ...formData, [name]: value });
     }
+    function handleSelectItem(itemId: number) {
+        const alreadySelectedItem = selectedItems.findIndex(item => item === itemId)
+
+        if (alreadySelectedItem >= 0) {
+            const filteredItems = selectedItems.filter(item => item !== itemId);
+
+            set_selectedItems(filteredItems);
+        } else {
+            set_selectedItems([...selectedItems, itemId]);
+        }
+
+    };
+    async function handleSubmit(event: FormEvent) {
+        event.preventDefault();
+
+        const [latitude, longitude] = selectedPosition;
+        const {name, email, whatsapp} = formData
+
+        const data = {
+            name,
+            email,
+            whatsapp,
+            latitude,
+            longitude,
+            city: selectedCity,
+            uf: selectedUf,
+            items: selectedItems
+        };
+
+        await api.post('/points', data);
+        alert(`Ponto de coleta ${data.name} criado`);
+        history.push('/');
+    }
+
+
 
     return (
         <div id="page-create-point">
@@ -85,7 +132,7 @@ const CreatePoint = () => {
                     Voltar
                 </Link>
             </header>
-            <form action="">
+            <form onSubmit={handleSubmit}>
                 <h1>Cadastro do ponto de coleta</h1>
 
                 <fieldset>
@@ -93,21 +140,35 @@ const CreatePoint = () => {
 
                     <div className="field">
                         <label htmlFor="name">Nome da entidade</label>
-                        <input type="text" name='name' id='name' />
+                        <input
+                            type="text"
+                            name='name'
+                            id='name'
+                            onChange={handleInputChange}
+                        />
                     </div>
 
                     <div className="field-group">
                         <div className="field">
                             <label htmlFor="email">E-mail</label>
-                            <input type="text" name='email' id='email' />
+                            <input
+                                type="text"
+                                name='email'
+                                id='email'
+                                onChange={handleInputChange}
+                            />
                         </div>
                         <div className="field">
                             <label htmlFor="whatsapp">Whatsapp</label>
-                            <input type="text" name='whatsapp' id='whatsapp' />
+                            <input
+                                type="text"
+                                name='whatsapp'
+                                id='whatsapp'
+                                onChange={handleInputChange}
+                            />
                         </div>
                     </div>
                 </fieldset>
-
 
                 <fieldset>
                     <legend>
@@ -159,7 +220,13 @@ const CreatePoint = () => {
                     <ul className='items-grid'>
                         {items.map(item => {
                             return (
-                                <li key={item.id}>
+                                //Se passar 'onClick={func(param)}', a função será executada, ao inves de passar a função como referencia.
+                                //Para passar a função com parametro, precisa ser 'onClick={ () => func(param) }'
+                                <li
+                                    key={item.id}
+                                    onClick={() => handleSelectItem(item.id)}
+                                    className={selectedItems.includes(item.id) ? 'selected' : ''}
+                                >
                                     <img src={item.URL} alt="" />
                                     <span>{item.title}</span>
                                 </li>
